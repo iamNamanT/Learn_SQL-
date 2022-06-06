@@ -1,0 +1,178 @@
+---CURSOR IN SQL SERVER 
+
+/*
+Cursor is a Temporary Memory or Temporary Work Station.
+A SQL cursor is a database object that is used to retrieve data from a result
+set one row at a time.
+A SQL cursor is used when the data needs to be updated row by row.
+It is allocated by the database server at the time of performing DML
+operations on Table by User.
+Cursors are used to store Database Tables.
+It allows you to process individual row returned by a query.
+*/
+
+----Types of Cursors in SQL
+/*
+1.Implicit Cursor:
+   Implicit cursor are also known as Default Cursors of SQL SERVER.
+   These Cursors are allocated by SQL SERVER when the user performs
+   DML operations.
+2.Explicit Cursor:
+   Explicit Cursors are created by users whenever the user requires them.
+   Explicit Cursors are used for fetching data from Table in Row-By-Row Manner.
+*/
+
+----Methods of Cursor
+/*
+1) Next
+2) Prior
+3) First
+4) Last 
+5) Absolute n
+6) Relative n
+*/
+----Step involved in SQL Cursor life cycle
+/*
+1.Declaring Cursor:
+       A cursor is declared by defining the SQL statement.
+2.Opening Cursor:
+       A cursor is opened for storing data retrieved from the result set.
+3.Fetching Cursor:
+       When a cursor is opened, rows can be fetched from the cursor one
+	   by one or in a block to do manipulation.
+4.Closing Cursor
+       The cursor should be closed explicitly after data manipulation.
+5.De-allocating Cursor
+       Cursors should be deallocated to delete cursor definition and release 
+	   all the system resources assosiated with the cursor.
+*/
+----Uses of cursors in 2 ways
+/*
+1.With cursor variables
+2.Without cursor variables
+*/
+
+----Implementation
+----Create table and insert some data
+CREATE TABLE Student_details(
+RollNo  int NOT NULL,
+StudentName varchar(100) NOT NULL,
+class varchar(10) NULL,
+Marks_Science int NOT NULL,
+Marks_Math int NOT NULL,
+Marks_Eng int NOT NULL
+)
+
+INSERT INTO Student_details values(1,'Anil','5th',34,78,54);
+INSERT INTO Student_details values(2,'Sunil','5th',14,78,54);
+INSERT INTO Student_details values(3,'Ajay','1th',35,78,54);
+INSERT INTO Student_details values(4,'Vijay','8th',64,78,54);
+INSERT INTO Student_details values(5,'Manoj','9th',44,78,54);
+INSERT INTO Student_details values(6,'Geeta','6th',84,78,54);
+INSERT INTO Student_details values(7,'Sita','10th',14,78,54);
+INSERT INTO Student_details values(8,'Reeta','5th',64,78,54);
+INSERT INTO Student_details values(9,'Arvind','10th',24,78,54);
+INSERT INTO Student_details values(10,'kumar','11th',84,78,54);
+
+SELECT * FROM Student_details;
+
+----1.Decalaring Cursor
+DECLARE myCursor CURSOR SCROLL FOR  
+SELECT * FROM Student_details;
+
+----2.Opening Cursor
+OPEN myCursor;
+
+----3.Fetching Cursor
+FETCH FIRST FROM myCursor;
+
+----4.Closing Cursor
+CLOSE myCursor;
+
+----5.De-allocating Cursor
+DEALLOCATE myCursor;
+
+----Without Cursor Variable
+DECLARE myCursor CURSOR SCROLL FOR  
+SELECT * FROM Student_details
+OPEN myCursor
+FETCH FIRST FROM myCursor
+FETCH NEXT FROM myCursor
+FETCH LAST FROM myCursor
+FETCH PRIOR FROM myCursor
+FETCH ABSOLUTE 4 FROM myCursor
+FETCH RELATIVE 3 FROM myCursor
+CLOSE myCursor
+DEALLOCATE myCursor
+
+----With Cursor Variable
+DECLARE myCursor CURSOR SCROLL FOR SELECT RollNo,StudentName FROM Student_details
+DECLARE @stu_rollno int, @stu_name varchar(50)
+OPEN myCursor
+FETCH FIRST FROM myCursor INTO @stu_rollno, @stu_name
+PRINT 'Employee is:' + CAST(@stu_rollno AS varchar(50)) + @stu_name
+FETCH NEXT FROM myCursor INTO @stu_rollno, @stu_name
+PRINT 'Employee is:' + CAST(@stu_rollno AS varchar(50)) + @stu_name
+
+FETCH LAST FROM myCursor INTO @stu_rollno, @stu_name
+PRINT 'Employee is:' + CAST(@stu_rollno AS varchar(50)) + @stu_name
+
+FETCH PRIOR FROM myCursor INTO @stu_rollno, @stu_name
+PRINT 'Employee is:' + CAST(@stu_rollno AS varchar(50)) + @stu_name
+
+FETCH ABSOLUTE 4 FROM myCursor INTO @stu_rollno, @stu_name
+PRINT 'Employee is:' + CAST(@stu_rollno AS varchar(50)) + @stu_name
+
+FETCH RELATIVE 3 FROM myCursor INTO @stu_rollno, @stu_name
+PRINT 'Employee is:' + CAST(@stu_rollno AS varchar(50)) + @stu_name
+
+CLOSE myCursor
+DEALLOCATE myCursor
+
+----More implementation
+DECLARE @rollno int,
+@student_name varchar(100),
+@marks_sci int,
+@marks_eng int,
+@marks_math int,
+@marks_total int,
+@percentage int;
+
+DECLARE stu_ms CURSOR FOR SELECT RollNo,StudentName,Marks_Science,Marks_eng,Marks_Math FROM Student_details
+OPEN stu_ms
+FETCH NEXT FROM stu_ms INTO @rollno,@student_name,@marks_sci,@marks_eng,@marks_math
+
+WHILE @@FETCH_STATUS=0
+BEGIN
+     PRINT CONCAT('Name: ',@student_name)
+	 PRINT CONCAT('Roll No: ',@rollno)
+	 PRINT CONCAT('Science: ',@marks_sci)
+	 PRINT CONCAT('Math: ',@marks_math)
+	 PRINT CONCAT('Math: ',@marks_eng)
+
+	 SET @marks_total = @marks_sci+@marks_math+@marks_eng
+
+	 PRINT CONCAT('Total: ',@marks_total)
+	 
+	 SET @percentage = @marks_total/3
+
+	 PRINT CONCAT('Percentage: ',@percentage)
+
+	 IF @percentage  > 80
+	    BEGIN 
+		   PRINT 'GRADE A'
+		END
+		ELSE IF @percentage > 60 AND @percentage <80
+		 BEGIN 
+		   PRINT 'GRADE B'
+		END
+        ELSE
+		 BEGIN 
+		   PRINT 'GRADE C'
+         END
+		PRINT '++++++++++++++++'
+	 FETCH NEXT FROM stu_ms INTO @rollno,@student_name,@marks_sci,@marks_eng,@marks_math
+END  
+
+CLOSE stu_ms
+DEALLOCATE stu_ms
